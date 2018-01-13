@@ -17,6 +17,7 @@ type user struct {
 
 var data = map[string]user{
 	"1": user{ID: "1", Name: "Cow"},
+	"2": user{ID: "2", Name: "MOoOo"},
 }
 
 /*
@@ -27,13 +28,15 @@ var data = map[string]user{
 */
 var userType = graphql.NewObject(
 	graphql.ObjectConfig{
-		Name: "User",
+		Name:        "User",
+		Description: "User is a doofus",
 		Fields: graphql.Fields{
 			"id": &graphql.Field{
 				Type: graphql.String,
 			},
 			"name": &graphql.Field{
-				Type: graphql.String,
+				Type:        graphql.String,
+				Description: "some stuff that will explain other stuff",
 			},
 		},
 	},

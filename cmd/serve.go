@@ -24,8 +24,8 @@ to quickly create a Cobra application.`,
 func runServe(cmd *cobra.Command, args []string) {
 	// Listen on HTTP port
 	// Handle /graphql
-	fmt.Println("woot")
-	http.handleFunc("/graphql", graphql.HttpHandler)
+	fmt.Println("[serve] started")
+	http.HandleFunc("/graphql", graphql.HTTPHandler)
 	http.ListenAndServe(":8080", nil)
 }
 

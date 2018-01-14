@@ -1,17 +1,24 @@
-# Gostack
-Experiemnt for a simple CRUD stack
+# Gostack experiment
+If I was starting a green-field project, I would consider something like this.
+
+The idea is to be modern, but as lean as possible.
 
 ## What I want
 
-- Uses ENV vars and TOML for configuration
-- Can use whatever database golang/sql can
-- GraphQL for API
-- Use an external JWT auth provider
-- Organized by business-domain into packages
+### Uses ENV vars and TOML for configuration
+Handled by Cobra and Viper from SPF13
 
-## Packages to use
+### Can use whatever database golang/sql can
+I'm considering sqlx or gorm for this purpose. I might also skip data mapping all together.
 
-- Database: XSQL or GORM
-- Basics: Cobra and Viper from SPF13
-- GraphQL: graphql-go/graphql-go
-- Sqlite for local development
+My ideal production environment would be postgres + some sort of cache (redis maybe).
+
+### GraphQL for API
+Handled by go-graphql/go-graphql
+
+### Use an external JWT auth provider
+- Going to get it working with Firebase first
+- Maybe add auth0 later
+
+### Organized by business-domain into packages
+Just my wanting to keep business logic as a first-class concern. So technical sub-directories are to be kept at a bare minimum.

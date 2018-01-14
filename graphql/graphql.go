@@ -10,6 +10,12 @@ import (
 
 // https://github.com/graphql-go/graphql/blob/master/examples/http/main.go
 
+// TODO: We need to be able to verify if the users token is valid
+// - If the token is invalid we reject the GraphQL query
+// - If the token is valid, we populate a "me" data object in the graph
+// - This should be cached until it expires
+// - https://firebase.google.com/docs/reference/rest/auth/#section-sign-in-with-oauth-credential
+
 type user struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`

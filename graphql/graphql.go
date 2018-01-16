@@ -103,7 +103,15 @@ func HTTPHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		query = r.URL.Query().Get("query")
 	}
+	if query == "" {
+		fmt.Println("Query is empty")
+	}
 	result := ExecuteQuery(query, schema)
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
+	w.Header().Set("Access-Control-Allow-Methods", "POST")
+	w.Header().Set("Access-Control-Allow-Headers", "ContentType, Authorization")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	json.NewEncoder(w).Encode(result)
 }
 

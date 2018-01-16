@@ -12,6 +12,9 @@ const fetcher = (params) => {
       headers: { ContentType: 'application/json' },
       body: JSON.stringify(params)
   }).then(response => response.json())
+  .catch(err => {
+    console.log('error', err)
+  })
 }
 
 

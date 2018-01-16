@@ -22,3 +22,12 @@ Handled by go-graphql/go-graphql
 
 ### Organized by business-domain into packages
 Just my wanting to keep business logic as a first-class concern. So technical sub-directories are to be kept at a bare minimum.
+
+## TODO
+
+- Setup http middleware
+    - Move CORS shit in there
+    - Enforce Firebase Auth here
+- Login screen
+    - Prompt login before GraphiQL if client has no token
+    - Store client token in local storage or some shit

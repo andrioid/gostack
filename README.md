@@ -25,6 +25,8 @@ Just my wanting to keep business logic as a first-class concern. So technical su
 
 ## TODO
 
+- Try adding some data types and querying them from GraphiQL
+- Hook up Postgres or Sqlite
 - Setup http middleware
     - Move CORS shit in there
     - Enforce Firebase Auth here

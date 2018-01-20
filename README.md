@@ -25,6 +25,7 @@ Just my wanting to keep business logic as a first-class concern. So technical su
 
 ## TODO
 
+- Parse for configuration file
 - Try adding some data types and querying them from GraphiQL
 - Hook up Postgres or Sqlite
 - Setup http middleware

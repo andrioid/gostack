@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/andrioid/gostack/graphql"
+	"github.com/andrioid/gostack/places"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"github.com/spf13/cobra"
@@ -28,12 +29,18 @@ func runServe(cmd *cobra.Command, args []string) {
 	// Listen on HTTP port
 	// Handle /graphql
 	// dbType := rootCmd.PersistentFlags().Lookup("db.type")
+	viper.SetDefault("db.type", "sqlite3")
+	viper.SetDefault("db.options", ".test.db")
 	dbType := viper.GetString("db.type")
 	dbOptions := viper.GetString("db.options")
-	_, err := gorm.Open(dbType, dbOptions)
+
+	fmt.Printf("db type: '%v'\n", dbType)
+	db, err := gorm.Open(dbType, dbOptions)
 	if err != nil {
 		panic("failed to connect to database")
 	}
+	placesModule, _ := places.New(db)
+	placesModule.Hello()
 	fmt.Printf("[serve] started %v\n", dbType)
 	http.HandleFunc("/graphql", graphql.HTTPHandler)
 	http.ListenAndServe(":8080", nil)

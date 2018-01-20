@@ -5,7 +5,10 @@ import (
 	"net/http"
 
 	"github.com/andrioid/gostack/graphql"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // serveCmd represents the serve command
@@ -24,7 +27,14 @@ to quickly create a Cobra application.`,
 func runServe(cmd *cobra.Command, args []string) {
 	// Listen on HTTP port
 	// Handle /graphql
-	fmt.Println("[serve] started")
+	// dbType := rootCmd.PersistentFlags().Lookup("db.type")
+	dbType := viper.GetString("db.type")
+	dbOptions := viper.GetString("db.options")
+	_, err := gorm.Open(dbType, dbOptions)
+	if err != nil {
+		panic("failed to connect to database")
+	}
+	fmt.Printf("[serve] started %v\n", dbType)
 	http.HandleFunc("/graphql", graphql.HTTPHandler)
 	http.ListenAndServe(":8080", nil)
 }

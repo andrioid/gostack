@@ -23,9 +23,19 @@ Handled by go-graphql/go-graphql
 ### Organized by business-domain into packages
 Just my wanting to keep business logic as a first-class concern. So technical sub-directories are to be kept at a bare minimum.
 
+## Structure
+The current directory vision is:
+- /awesomeproject/accounts: A domain package of awesomeproject. Fulfills gostack/module interface
+- /awesomeproject/main.go: Calls gostack.NewHandler(...modules)
+    - This will iterate over modules, generate query and mutation types, hook up /graphql handler and such
+
+How inter-linked your modules are, is up to you. Gostack doesn't care. But, if you need to access other packages, you need to do it from your own program and not from gostack.
+
+
 ## TODO
 
-- Parse for configuration file
+- Parse for configuration file (use rootCmd lookup thingy)
+- Iterate over modules to create graphql handler
 - Try adding some data types and querying them from GraphiQL
 - Hook up Postgres or Sqlite
 - Setup http middleware

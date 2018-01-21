@@ -37,14 +37,13 @@ func runServe(cmd *cobra.Command, args []string) {
 
 	fmt.Printf("db type: '%v'\n", dbType)
 	db, err := gorm.Open(dbType, dbOptions)
+	defer db.Close()
 	if err != nil {
 		panic("failed to connect to database")
 	}
 	var modules []module.Module
 	placesModule, _ := places.New(db)
 	modules = append(modules, placesModule)
-	placesModule.Hello()
-
 	// Iterate over modules
 	graphql.SetSchema(modules)
 	// Generate schema from query and mutation types

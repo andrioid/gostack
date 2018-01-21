@@ -32,10 +32,24 @@ var placeSchemaType = graphql.NewObject(graphql.ObjectConfig{
 	Fields: graphql.Fields{
 		"id": &graphql.Field{
 			Type: graphql.ID,
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				pp, isOK := p.Source.(Place)
+				if !isOK {
+					return nil, nil
+				}
+				return pp.ID, nil
+			},
 		},
 		"name": &graphql.Field{
 			Type:        graphql.String,
 			Description: "some stuff that will explain other stuff",
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				pp, isOK := p.Source.(Place)
+				if !isOK {
+					return nil, nil
+				}
+				return pp.Name, nil
+			},
 		},
 	},
 })
@@ -63,8 +77,8 @@ var queryTypes = graphql.Fields{
 	},
 }
 
-func New(db *gorm.DB) (*Module, error) {
-	db = db
+func New(newDB *gorm.DB) (*Module, error) {
+	db = newDB
 	db.AutoMigrate(&Place{}, &PlaceType{})
 	bleh := Place{
 		Name: "test place",

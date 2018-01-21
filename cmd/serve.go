@@ -39,10 +39,12 @@ func runServe(cmd *cobra.Command, args []string) {
 	if err != nil {
 		panic("failed to connect to database")
 	}
+	modules := make(interface{}, 5)
 	placesModule, _ := places.New(db)
 	placesModule.Hello()
 
 	// Iterate over modules
+	schmea := graphql.GetSchema()
 	// Generate schema from query and mutation types
 	// Generate http handler from schema for /graphql
 	fmt.Printf("[serve] started %v\n", dbType)

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/andrioid/gostack/module"
 	"github.com/graphql-go/graphql"
 )
 
@@ -127,6 +128,11 @@ func ExecuteQuery(query string, schema graphql.Schema) *graphql.Result {
 	return result
 }
 
-func GetSchema() graphql.Schema {
+func GetSchema(m []module.Module) graphql.Schema {
+	// iterate over m
+	// make a new map with all values
+	// warn if duplicates
+	// create schema
+	// return schema
 	return schema
 }

@@ -45,16 +45,19 @@ var queryTypes = graphql.Fields{
 		Type: placeSchemaType,
 		Args: graphql.FieldConfigArgument{
 			"id": &graphql.ArgumentConfig{
-				Type: graphql.ID,
+				Type: graphql.Int,
 			},
 		},
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-			idQuery, isOK := p.Args["id"].(int64)
+			idQuery, isOK := p.Args["id"].(int)
+			fmt.Println("query id", idQuery)
 			if isOK {
 				var pl Place
 				db.First(&pl, idQuery)
+				fmt.Println("found place", pl)
 				return pl, nil
 			}
+			fmt.Println("resolver not ok")
 			return nil, nil
 		},
 	},
@@ -63,6 +66,10 @@ var queryTypes = graphql.Fields{
 func New(db *gorm.DB) (*Module, error) {
 	db = db
 	db.AutoMigrate(&Place{}, &PlaceType{})
+	bleh := Place{
+		Name: "test place",
+	}
+	db.Create(&bleh)
 	return &Module{}, nil
 }
 

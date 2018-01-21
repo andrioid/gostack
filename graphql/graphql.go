@@ -17,16 +17,6 @@ import (
 // - This should be cached until it expires
 // - https://firebase.google.com/docs/reference/rest/auth/#section-sign-in-with-oauth-credential
 
-type user struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
-}
-
-var data = map[string]user{
-	"1": user{ID: "1", Name: "Cow"},
-	"2": user{ID: "2", Name: "MOoOo"},
-}
-
 /*
    Create User object type with fields "id" and "name" by using GraphQLObjectTypeConfig:
        - Name: name of object type
@@ -58,33 +48,7 @@ var userType = graphql.NewObject(
        - Args: arguments to query with current field
        - Resolve: function to query data using params from [Args] and return value with current type
 */
-var queryType = graphql.NewObject(
-	graphql.ObjectConfig{
-		Name: "Query",
-		Fields: graphql.Fields{
-			"user": &graphql.Field{
-				Type: userType,
-				Args: graphql.FieldConfigArgument{
-					"id": &graphql.ArgumentConfig{
-						Type: graphql.String,
-					},
-				},
-				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					idQuery, isOK := p.Args["id"].(string)
-					if isOK {
-						return data[idQuery], nil
-					}
-					return nil, nil
-				},
-			},
-		},
-	})
-
-var schema, _ = graphql.NewSchema(
-	graphql.SchemaConfig{
-		Query: queryType,
-	},
-)
+var schema graphql.Schema
 
 // HTTPHandler tells the http-server how to process GraphQL
 func HTTPHandler(w http.ResponseWriter, r *http.Request) {
@@ -128,11 +92,36 @@ func ExecuteQuery(query string, schema graphql.Schema) *graphql.Result {
 	return result
 }
 
-func GetSchema(m []module.Module) graphql.Schema {
+func SetSchema(m []module.Module) error {
+	var queryTypeFields graphql.Fields
+	queryTypeFields = make(graphql.Fields)
+
+	for _, mod := range m {
+		fields, err := mod.QueryTypes()
+		if err != nil {
+			fmt.Println("argh, lort")
+			panic(err)
+		}
+		for k, v := range fields {
+			queryTypeFields[k] = v
+		}
+	}
+	queryType := graphql.NewObject(
+		graphql.ObjectConfig{
+			Name:   "Query",
+			Fields: queryTypeFields,
+		},
+	)
+
+	schema, _ = graphql.NewSchema(
+		graphql.SchemaConfig{
+			Query: queryType,
+		},
+	)
 	// iterate over m
 	// make a new map with all values
 	// warn if duplicates
 	// create schema
 	// return schema
-	return schema
+	return nil
 }

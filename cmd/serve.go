@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/andrioid/gostack/graphql"
+	"github.com/andrioid/gostack/module"
 	"github.com/andrioid/gostack/places"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
@@ -39,12 +40,13 @@ func runServe(cmd *cobra.Command, args []string) {
 	if err != nil {
 		panic("failed to connect to database")
 	}
-	modules := make(interface{}, 5)
+	var modules []module.Module
 	placesModule, _ := places.New(db)
+	modules = append(modules, placesModule)
 	placesModule.Hello()
 
 	// Iterate over modules
-	schmea := graphql.GetSchema()
+	graphql.SetSchema(modules)
 	// Generate schema from query and mutation types
 	// Generate http handler from schema for /graphql
 	fmt.Printf("[serve] started %v\n", dbType)

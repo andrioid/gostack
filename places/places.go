@@ -74,6 +74,6 @@ func MutationTypes() (graphql.Fields, error) {
 	return nil, nil
 }
 
-func QueryTypes() (graphql.Fields, error) {
+func (m Module) QueryTypes() (graphql.Fields, error) {
 	return queryTypes, nil
 }

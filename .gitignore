@@ -1,5 +1,6 @@
 gostack/
 node_modules
+gostack
 gostack.exe
 .gostack.yaml
 gostack.exe~

@@ -10,26 +10,22 @@ type Module struct {
 	db *gorm.DB
 }
 
-type PlaceType int64
-
-const (
-	PLACE_TYPE_PARKING_LOT PlaceType = iota
-)
-
-var types = [...]string {
-	"Undefined",
-	""
-}
-
 type Place struct {
 	gorm.Model
 	Name      string
 	Latitude  float64
 	Longitude float64
+	// Remember to update this if you change the PlaceType
+	PlaceTypes []PlaceType `gorm:"many2many:typesOfPlaces;"`
+}
+
+type PlaceType struct {
+	gorm.Model
+	Name string
 }
 
 func New(db *gorm.DB) (*Module, error) {
-	db.AutoMigrate(&Place{})
+	db.AutoMigrate(&Place{}, &PlaceType{})
 	return &Module{db: db}, nil
 }
 

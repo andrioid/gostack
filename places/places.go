@@ -3,6 +3,7 @@ package places
 import (
 	"fmt"
 
+	"github.com/graphql-go/graphql"
 	"github.com/jinzhu/gorm"
 )
 
@@ -16,7 +17,7 @@ type Place struct {
 	Latitude  float64
 	Longitude float64
 	// Remember to update this if you change the PlaceType
-	PlaceTypes []PlaceType `gorm:"many2many:typesOfPlaces;"`
+	PlaceTypes []PlaceType `gorm:"many2many:place_type_pairs;"`
 }
 
 type PlaceType struct {
@@ -31,4 +32,12 @@ func New(db *gorm.DB) (*Module, error) {
 
 func (m Module) Hello() {
 	fmt.Println("Hello")
+}
+
+func MutationTypes() (graphql.Fields, error) {
+	return nil, nil
+}
+
+func QueryTypes() (graphql.Fields, error) {
+	return nil, nil
 }

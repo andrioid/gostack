@@ -41,6 +41,10 @@ func runServe(cmd *cobra.Command, args []string) {
 	}
 	placesModule, _ := places.New(db)
 	placesModule.Hello()
+
+	// Iterate over modules
+	// Generate schema from query and mutation types
+	// Generate http handler from schema for /graphql
 	fmt.Printf("[serve] started %v\n", dbType)
 	http.HandleFunc("/graphql", graphql.HTTPHandler)
 	http.ListenAndServe(":8080", nil)

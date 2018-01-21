@@ -10,8 +10,8 @@ import (
 )
 
 type Module interface {
-	// MutationTypes() (mutations graphql.Fields, err error) // GraphQL mutation to expose
-	QueryTypes() (queries graphql.Fields, err error) // GraphQL Queries to expose
+	MutationTypes() (mutations graphql.Fields, err error) // GraphQL mutation to expose
+	QueryTypes() (queries graphql.Fields, err error)      // GraphQL Queries to expose
 	// Routes() string // Which HTTP routes to expose, maybe layer
 }
 

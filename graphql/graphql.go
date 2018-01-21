@@ -92,18 +92,25 @@ func ExecuteQuery(query string, schema graphql.Schema) *graphql.Result {
 	return result
 }
 
-func SetSchema(m []module.Module) error {
-	var queryTypeFields graphql.Fields
+func CreateSchema(m []module.Module) error {
+	var queryTypeFields, mutationTypeFields graphql.Fields
 	queryTypeFields = make(graphql.Fields)
+	mutationTypeFields = make(graphql.Fields)
 
 	for _, mod := range m {
-		fields, err := mod.QueryTypes()
+		queryFields, err := mod.QueryTypes()
 		if err != nil {
-			fmt.Println("argh, lort")
 			panic(err)
 		}
-		for k, v := range fields {
+		for k, v := range queryFields {
 			queryTypeFields[k] = v
+		}
+		mutationFields, err := mod.MutationTypes()
+		if err != nil {
+			panic(err)
+		}
+		for k, v := range mutationFields {
+			mutationTypeFields[k] = v
 		}
 	}
 	queryType := graphql.NewObject(

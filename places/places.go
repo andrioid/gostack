@@ -1,8 +1,6 @@
 package places
 
 import (
-	"fmt"
-
 	"github.com/graphql-go/graphql"
 	"github.com/jinzhu/gorm"
 )
@@ -64,14 +62,11 @@ var queryTypes = graphql.Fields{
 		},
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			idQuery, isOK := p.Args["id"].(int)
-			fmt.Println("query id", idQuery)
 			if isOK {
 				var pl Place
 				db.First(&pl, idQuery)
-				fmt.Println("found place", pl)
 				return pl, nil
 			}
-			fmt.Println("resolver not ok")
 			return nil, nil
 		},
 	},
@@ -80,18 +75,10 @@ var queryTypes = graphql.Fields{
 func New(newDB *gorm.DB) (*Module, error) {
 	db = newDB
 	db.AutoMigrate(&Place{}, &PlaceType{})
-	bleh := Place{
-		Name: "test place",
-	}
-	db.Create(&bleh)
 	return &Module{}, nil
 }
 
-func (m Module) Hello() {
-	fmt.Println("Hello")
-}
-
-func MutationTypes() (graphql.Fields, error) {
+func (m Module) MutationTypes() (graphql.Fields, error) {
 	return nil, nil
 }
 

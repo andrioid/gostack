@@ -6,7 +6,8 @@ import '../node_modules/graphiql/graphiql.css'
 import fetch from 'isomorphic-fetch'
 
 const fetcher = (params) => {
-  const baseUrl = 'http://localhost:8080/graphql'
+  const getUrl = window.location
+  const baseUrl = `${getUrl.protocol}//${getUrl.host}/graphql`
   return fetch(baseUrl, {
       method: 'post',
       headers: { ContentType: 'application/json' },

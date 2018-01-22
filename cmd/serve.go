@@ -7,6 +7,7 @@ import (
 	"github.com/andrioid/gostack/graphql"
 	"github.com/andrioid/gostack/module"
 	"github.com/andrioid/gostack/places"
+	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"github.com/spf13/cobra"
@@ -45,8 +46,14 @@ func runServe(cmd *cobra.Command, args []string) {
 	placesModule, _ := places.New(db)
 	modules = append(modules, placesModule)
 	graphql.CreateSchema(modules)
+
+	r := mux.NewRouter()
+	r.HandleFunc("/graphql", graphql.HTTPHandler)
+	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./client/build")))
+	http.Handle("/", r)
+
 	fmt.Printf("[serve] started %v\n", dbType)
-	http.HandleFunc("/graphql", graphql.HTTPHandler)
+	// http.HandleFunc("/graphql", graphql.HTTPHandler)
 	http.ListenAndServe(":8080", nil)
 }
 

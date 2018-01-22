@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "firebase": "^4.9.0",
     "graphiql": "^0.11.11",
     "graphql": "^0.11.0",
     "isomorphic-fetch": "^2.2.1",

@@ -1,69 +1,93 @@
-import React, { Component } from 'react';
-import GraphiQL from 'graphiql'
-import './App.css';
-import '../node_modules/graphiql/graphiql.css'
-import fetch from 'isomorphic-fetch'
-import * as firebase from 'firebase'
+import React, { Component } from "react";
+import GraphiQL from "graphiql";
+import "./App.css";
+import "../node_modules/graphiql/graphiql.css";
+import fetch from "isomorphic-fetch";
+import { loginWithGoogle, login, logout } from "./helpers";
+import { firebaseAuth } from './config'
 
-var config = {
-  apiKey: "AIzaSyD7tG11nYwNHUPmJ6jj6p-NFJC7R8_Rkj8",
-  authDomain: "learn-with-images.firebaseapp.com",
-  databaseURL: "https://learn-with-images.firebaseio.com",
-  projectId: "learn-with-images",
-  storageBucket: "learn-with-images.appspot.com",
-  messagingSenderId: "977496925083"
-};
-firebase.initializeApp(config);
-
-const fetcher = (params) => {
-  const getUrl = window.location
-  const baseUrl = `${getUrl.protocol}//${getUrl.host}/graphql`
+const fetcher = params => {
+  const getUrl = window.location;
+  const baseUrl = `${getUrl.protocol}//${getUrl.host}/graphql`;
   return fetch(baseUrl, {
-      method: 'post',
-      headers: { ContentType: 'application/json' },
-      body: JSON.stringify(params)
-  }).then(response => response.json())
-  .catch(err => {
-    console.log('error', err)
+    method: "post",
+    headers: { ContentType: "application/json" },
+    body: JSON.stringify(params)
   })
-}
-
+    .then(response => response.json())
+    .catch(err => {
+      console.log("error", err);
+    });
+};
 
 class App extends Component {
+  state = {
+    loggedIn: false
+  };
+
+  state = {
+    loggedIn: false,
+    loading: true
+  };
+  componentDidMount() {
+    this.removeListener = firebaseAuth().onAuthStateChanged(user => {
+      console.log('user', user)
+      if (user) {
+        this.setState({
+          loggedIn: true,
+          loading: false
+        });
+      } else {
+        this.setState({
+          loggedIn: false,
+          loading: false
+        });
+      }
+    });
+
+    firebaseAuth().getRedirectResult().then(function(result) {
+      if (result.credential) {
+        // This gives you a Google Access Token. You can use it to access the Google API.
+        var token = result.credential.accessToken;
+        // ...
+      }
+      // The signed-in user info.
+      var user = result.user;
+      console.log('redirect result', user)
+    }).catch(function(error) {
+      console.log('error catching redirect', error)
+      // Handle Errors here.
+      var errorCode = error.code;
+      var errorMessage = error.message;
+      // The email of the user's account used.
+      var email = error.email;
+      // The firebase.auth.AuthCredential type that was used.
+      var credential = error.credential;
+      // ...
+    });
+  }
+
+  componentWillUnmount() {
+    this.removeListener();
+  }
 
   handleLogin = () => {
-    try {
-      // Using a popup.
-      var provider = new firebase.auth.GoogleAuthProvider();
-      provider.addScope('profile');
-      provider.addScope('email');
-      firebase.auth().signInWithPopup(provider).then(function(result) {
-        // This gives you a Google Access Token.
-        var token = result.credential.accessToken;
-        // The signed-in user info.
-        var user = result.user;
-        console.log('firebase', user, token)
-      });
-      // Start a sign in process for an unauthenticated user.
-      var provider = new firebase.auth.GoogleAuthProvider();
-      provider.addScope('profile');
-      provider.addScope('email');
-      firebase.auth().signInWithRedirect(provider);        
-    } catch (err) {
-      console.error(err)
-    }
-  }
+    loginWithGoogle()
+  };
 
   render() {
     return (
       <div className="App">
-        <div style={{ height: '100vh', width: '100vw' }}>
-          <GraphiQL fetcher={fetcher} />
-        </div>
-        <div style={{ padding: 20 }}>
-          <button onClick={this.handleLogin}>Login</button>
-        </div>
-
+        {this.state.loggedIn ? (
+          <div style={{ height: "100vh", width: "100vw" }}>
+            {/* <GraphiQL fetcher={fetcher} /> */}
+            <button onClick={() => logout()}>Logout</button>
+          </div>
+        ) : (
+          <div style={{ padding: 20 }}>
+            <button onClick={this.handleLogin}>Login</button>
+          </div>
+        )}
       </div>
     );
   }

@@ -40,6 +40,7 @@ func runServe(cmd *cobra.Command, args []string) {
 	viper.SetDefault("firebase.projectId", "insertyours")
 	viper.SetDefault("firebase.storageBucket", "insertyours")
 	viper.SetDefault("firebase.messagingSenderId", "insertyours")
+	viper.SetDefault("firebase.serviceAccountFile", "service-account-key.json")
 
 	if err := viper.SafeWriteConfigAs(".gostack.toml"); err != nil {
 		if os.IsNotExist(err) {
@@ -47,15 +48,27 @@ func runServe(cmd *cobra.Command, args []string) {
 		}
 	}
 
+	// Database
 	dbType := viper.GetString("db.type")
 	dbOptions := viper.GetString("db.options")
-
 	fmt.Printf("db type: '%v'\n", dbType)
 	db, err := gorm.Open(dbType, dbOptions)
 	defer db.Close()
 	if err != nil {
 		panic("failed to connect to database")
 	}
+
+	// Firebase
+	// https://firebase.google.com/docs/auth/admin/verify-id-tokens
+	// https://firebase.google.com/docs/admin/setup
+	//opt := option.WithCredentialsFile(viper.GetString("firebase.serviceAccountFile"))
+	//app, err := firebase.NewApp(context.Background(), nil, opt)
+	//if err != nil {
+	//	log.Fatalf("error initializing app: %v\n", err)
+	//}
+	// TODO: app isn't accessable to graphql package, so maybe create middleware for token verification
+
+	// Modules
 	var modules []module.Module
 	placesModule, _ := places.New(db)
 	modules = append(modules, placesModule)

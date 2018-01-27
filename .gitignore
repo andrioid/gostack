@@ -4,3 +4,6 @@ gostack
 gostack.exe
 .gostack.yaml
 gostack.exe~
+service-account-key.json
+.test.db
+.gostack.toml

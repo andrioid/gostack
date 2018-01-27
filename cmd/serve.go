@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/andrioid/gostack/graphql"
 	"github.com/andrioid/gostack/module"
@@ -33,6 +34,19 @@ func runServe(cmd *cobra.Command, args []string) {
 	// dbType := rootCmd.PersistentFlags().Lookup("db.type")
 	viper.SetDefault("db.type", "sqlite3")
 	viper.SetDefault("db.options", ".test.db")
+	viper.SetDefault("firebase.apiKey", "insertyours")
+	viper.SetDefault("firebase.authDomain", "insertyours")
+	viper.SetDefault("firebase.databaseURL", "insertyours")
+	viper.SetDefault("firebase.projectId", "insertyours")
+	viper.SetDefault("firebase.storageBucket", "insertyours")
+	viper.SetDefault("firebase.messagingSenderId", "insertyours")
+
+	if err := viper.SafeWriteConfigAs(".gostack.toml"); err != nil {
+		if os.IsNotExist(err) {
+			err = viper.WriteConfigAs(".gostack.toml")
+		}
+	}
+
 	dbType := viper.GetString("db.type")
 	dbOptions := viper.GetString("db.options")
 

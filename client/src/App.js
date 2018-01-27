@@ -6,20 +6,6 @@ import fetch from "isomorphic-fetch";
 import { loginWithGoogle, login, logout } from "./helpers";
 import { firebaseAuth } from './config'
 
-const fetcher = params => {
-  const getUrl = window.location;
-  const baseUrl = `${getUrl.protocol}//${getUrl.host}/graphql`;
-  return fetch(baseUrl, {
-    method: "post",
-    headers: { ContentType: "application/json" },
-    body: JSON.stringify(params)
-  })
-    .then(response => response.json())
-    .catch(err => {
-      console.log("error", err);
-    });
-};
-
 class App extends Component {
   state = {
     loggedIn: false
@@ -27,15 +13,19 @@ class App extends Component {
 
   state = {
     loggedIn: false,
-    loading: true
+    loading: true,
+    firebaseIdToken: null,
+    displayName: null
   };
   componentDidMount() {
-    this.removeListener = firebaseAuth().onAuthStateChanged(user => {
+    this.removeListener = firebaseAuth().onAuthStateChanged(async user => {
       console.log('user', user)
       if (user) {
         this.setState({
           loggedIn: true,
-          loading: false
+          loading: false,
+          firebaseIdToken: await user.getIdToken(),
+          displayName: user.displayName
         });
       } else {
         this.setState({
@@ -75,13 +65,32 @@ class App extends Component {
     loginWithGoogle()
   };
 
+  fetcher = params => {
+    const getUrl = window.location;
+    const baseUrl = `${getUrl.protocol}//${getUrl.hostname}:8080/graphql`;
+    return fetch(baseUrl, {
+      method: "post",
+      headers: {
+        ContentType: "application/json",
+        Authorization: `Bearer ${this.state.firebaseIdToken}`
+      },
+      body: JSON.stringify(params)
+    })
+      .then(response => response.json())
+      .catch(err => {
+        console.log("error", err);
+      });
+  };
+
   render() {
     return (
       <div className="App">
         {this.state.loggedIn ? (
           <div style={{ height: "100vh", width: "100vw" }}>
-            {/* <GraphiQL fetcher={fetcher} /> */}
+            <p>{this.state.displayName}</p>
             <button onClick={() => logout()}>Logout</button>
+            <GraphiQL fetcher={this.fetcher} />
+
           </div>
         ) : (
           <div style={{ padding: 20 }}>

@@ -53,6 +53,12 @@ var schema graphql.Schema
 // HTTPHandler tells the http-server how to process GraphQL
 func HTTPHandler(w http.ResponseWriter, r *http.Request) {
 	var query string
+	auth := r.Header.Get("Authorization")
+
+	if auth != "" {
+		// TODO: Verify the token found with Firebase SDK
+		fmt.Println("Auth header", auth)
+	}
 	if r.Method == http.MethodPost {
 		decoder := json.NewDecoder(r.Body)
 		var t struct {

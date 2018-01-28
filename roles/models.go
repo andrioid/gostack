@@ -26,11 +26,3 @@ func TokenToUser(t *auth.Token) *User {
 	// Always return an user object, unless token failed to parse
 	return nil
 }
-
-// Role of a user
-type Role struct {
-	// UUID given to us by the authentication provider. Used to identify a specific user.
-	UUID string
-	// Role Name.
-	Role RoleEnum
-}

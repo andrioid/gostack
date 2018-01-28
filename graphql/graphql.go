@@ -5,9 +5,12 @@ import (
 	"fmt"
 	"net/http"
 
+	"firebase.google.com/go/auth"
 	"github.com/andrioid/gostack/module"
 	"github.com/graphql-go/graphql"
 )
+
+const bearer = "Bearer"
 
 // https://github.com/graphql-go/graphql/blob/master/examples/http/main.go
 
@@ -51,39 +54,61 @@ var userType = graphql.NewObject(
 var schema graphql.Schema
 
 // HTTPHandler tells the http-server how to process GraphQL
-func HTTPHandler(w http.ResponseWriter, r *http.Request) {
-	var query string
-	auth := r.Header.Get("Authorization")
+func HTTPHandler(a *auth.Client) func(http.ResponseWriter, *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var query string
+		t, _ := authorizationFromHeader(r)
 
-	if auth != "" {
-		// TODO: Verify the token found with Firebase SDK
-		fmt.Println("Auth header", auth)
-	}
-	if r.Method == http.MethodPost {
-		decoder := json.NewDecoder(r.Body)
-		var t struct {
-			Query string
-		}
-		err := decoder.Decode(&t)
+		token, err := a.VerifyIDToken(t)
 		if err != nil {
-			http.Error(w, "Invalid request", http.StatusBadRequest)
-			return
+			fmt.Println("Error verifying token", err)
 		}
-		defer r.Body.Close()
-		query = t.Query
-	} else {
-		query = r.URL.Query().Get("query")
+
+		if t != "" {
+			// TODO: Verify the token found with Firebase SDK
+			fmt.Println("Auth header", t, token)
+		}
+		if r.Method == http.MethodPost {
+			decoder := json.NewDecoder(r.Body)
+			var t struct {
+				Query string
+			}
+			err := decoder.Decode(&t)
+			if err != nil {
+				http.Error(w, "Invalid request", http.StatusBadRequest)
+				return
+			}
+			defer r.Body.Close()
+			query = t.Query
+		} else {
+			query = r.URL.Query().Get("query")
+		}
+		if query == "" {
+			fmt.Println("Query is empty")
+		}
+		result := ExecuteQuery(query, schema)
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
+		w.Header().Set("Access-Control-Allow-Methods", "POST")
+		w.Header().Set("Access-Control-Allow-Headers", "ContentType, Authorization")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		json.NewEncoder(w).Encode(result)
+		return
+	})
+}
+
+func authorizationFromHeader(req *http.Request) (string, error) {
+	header := req.Header.Get("Authorization")
+	if header == "" {
+		return "", fmt.Errorf("Authorization header not found")
 	}
-	if query == "" {
-		fmt.Println("Query is empty")
+
+	l := len(bearer)
+	if len(header) > l+1 && header[:l] == bearer {
+		return header[l+1:], nil
 	}
-	result := ExecuteQuery(query, schema)
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Credentials", "true")
-	w.Header().Set("Access-Control-Allow-Methods", "POST")
-	w.Header().Set("Access-Control-Allow-Headers", "ContentType, Authorization")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	json.NewEncoder(w).Encode(result)
+
+	return "", fmt.Errorf("Authorization header format must be 'Bearer {token}'")
 }
 
 // ExecuteQuery does stuff

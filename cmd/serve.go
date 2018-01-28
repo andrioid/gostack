@@ -1,10 +1,13 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 
+	firebase "firebase.google.com/go"
 	"github.com/andrioid/gostack/graphql"
 	"github.com/andrioid/gostack/module"
 	"github.com/andrioid/gostack/places"
@@ -13,6 +16,7 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"google.golang.org/api/option"
 )
 
 // serveCmd represents the serve command
@@ -61,11 +65,15 @@ func runServe(cmd *cobra.Command, args []string) {
 	// Firebase
 	// https://firebase.google.com/docs/auth/admin/verify-id-tokens
 	// https://firebase.google.com/docs/admin/setup
-	//opt := option.WithCredentialsFile(viper.GetString("firebase.serviceAccountFile"))
-	//app, err := firebase.NewApp(context.Background(), nil, opt)
-	//if err != nil {
-	//	log.Fatalf("error initializing app: %v\n", err)
-	//}
+	opt := option.WithCredentialsFile(viper.GetString("firebase.serviceAccountFile"))
+	app, err := firebase.NewApp(context.Background(), nil, opt)
+	if err != nil {
+		log.Fatalf("error initializing app: %v\n", err)
+	}
+	firebaseAuth, err := app.Auth(context.Background())
+	if err != nil {
+		panic(err)
+	}
 	// TODO: app isn't accessable to graphql package, so maybe create middleware for token verification
 
 	// Modules
@@ -75,7 +83,8 @@ func runServe(cmd *cobra.Command, args []string) {
 	graphql.CreateSchema(modules)
 
 	r := mux.NewRouter()
-	r.HandleFunc("/graphql", graphql.HTTPHandler)
+
+	r.HandleFunc("/graphql", graphql.HTTPHandler(firebaseAuth))
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./client/build")))
 	http.Handle("/", r)
 

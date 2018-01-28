@@ -2,8 +2,11 @@ package graphql
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
+
+	"github.com/graphql-go/graphql/gqlerrors"
 
 	"firebase.google.com/go/auth"
 	"github.com/andrioid/gostack/module"
@@ -57,17 +60,10 @@ var schema graphql.Schema
 func HTTPHandler(a *auth.Client) func(http.ResponseWriter, *http.Request) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var query string
-		t, _ := authorizationFromHeader(r)
+		tokenString, _ := authorizationFromHeader(r)
 
-		token, err := a.VerifyIDToken(t)
-		if err != nil {
-			fmt.Println("Error verifying token", err)
-		}
+		token, _ := a.VerifyIDToken(tokenString) // token being nil, is fine
 
-		if t != "" {
-			// TODO: Verify the token found with Firebase SDK
-			fmt.Println("Auth header", t, token)
-		}
 		if r.Method == http.MethodPost {
 			decoder := json.NewDecoder(r.Body)
 			var t struct {
@@ -86,8 +82,9 @@ func HTTPHandler(a *auth.Client) func(http.ResponseWriter, *http.Request) {
 		if query == "" {
 			fmt.Println("Query is empty")
 		}
-		result := ExecuteQuery(query, schema)
+		result := ExecuteQuery(query, schema, token)
 		w.Header().Set("Content-Type", "application/json")
+		// CORS is annoying, but necessary
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
 		w.Header().Set("Access-Control-Allow-Methods", "POST")
 		w.Header().Set("Access-Control-Allow-Headers", "ContentType, Authorization")
@@ -111,8 +108,22 @@ func authorizationFromHeader(req *http.Request) (string, error) {
 	return "", fmt.Errorf("Authorization header format must be 'Bearer {token}'")
 }
 
+func createErrorResult(es string) *graphql.Result {
+	gqlErrors := make(gqlerrors.FormattedErrors, 0)
+	err := errors.New(es)
+	gqlErrors = append(gqlErrors, gqlerrors.FormatError(err))
+	return &graphql.Result{
+		Data:   nil,
+		Errors: gqlErrors,
+	}
+}
+
 // ExecuteQuery does stuff
-func ExecuteQuery(query string, schema graphql.Schema) *graphql.Result {
+func ExecuteQuery(query string, schema graphql.Schema, token *auth.Token) *graphql.Result {
+	if token == nil {
+		return createErrorResult("Not logged in")
+	}
+	fmt.Println("token", token)
 	result := graphql.Do(graphql.Params{
 		Schema:        schema,
 		RequestString: query,

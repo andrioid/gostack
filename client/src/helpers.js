@@ -21,6 +21,10 @@ export function login(email, pw) {
   return firebaseAuth().signInWithEmailAndPassword(email, pw);
 }
 
+export const loginAnonymous = () => {
+  return firebaseAuth().signInAnonymously()
+}
+
 export function resetPassword(email) {
   return firebaseAuth().sendPasswordResetEmail(email);
 }

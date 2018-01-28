@@ -3,8 +3,8 @@ import GraphiQL from "graphiql";
 import "./App.css";
 import "../node_modules/graphiql/graphiql.css";
 import fetch from "isomorphic-fetch";
-import { loginWithGoogle, login, logout } from "./helpers";
-import { firebaseAuth } from './config'
+import { loginWithGoogle, login, logout, loginAnonymous } from "./helpers";
+import { firebaseAuth } from "./config";
 
 class App extends Component {
   state = {
@@ -19,7 +19,7 @@ class App extends Component {
   };
   componentDidMount() {
     this.removeListener = firebaseAuth().onAuthStateChanged(async user => {
-      console.log('user', user)
+      console.log("user", user);
       if (user) {
         this.setState({
           loggedIn: true,
@@ -35,26 +35,29 @@ class App extends Component {
       }
     });
 
-    firebaseAuth().getRedirectResult().then(function(result) {
-      if (result.credential) {
-        // This gives you a Google Access Token. You can use it to access the Google API.
-        var token = result.credential.accessToken;
+    firebaseAuth()
+      .getRedirectResult()
+      .then(function(result) {
+        if (result.credential) {
+          // This gives you a Google Access Token. You can use it to access the Google API.
+          var token = result.credential.accessToken;
+          // ...
+        }
+        // The signed-in user info.
+        var user = result.user;
+        console.log("redirect result", user);
+      })
+      .catch(function(error) {
+        console.log("error catching redirect", error);
+        // Handle Errors here.
+        var errorCode = error.code;
+        var errorMessage = error.message;
+        // The email of the user's account used.
+        var email = error.email;
+        // The firebase.auth.AuthCredential type that was used.
+        var credential = error.credential;
         // ...
-      }
-      // The signed-in user info.
-      var user = result.user;
-      console.log('redirect result', user)
-    }).catch(function(error) {
-      console.log('error catching redirect', error)
-      // Handle Errors here.
-      var errorCode = error.code;
-      var errorMessage = error.message;
-      // The email of the user's account used.
-      var email = error.email;
-      // The firebase.auth.AuthCredential type that was used.
-      var credential = error.credential;
-      // ...
-    });
+      });
   }
 
   componentWillUnmount() {
@@ -62,7 +65,7 @@ class App extends Component {
   }
 
   handleLogin = () => {
-    loginWithGoogle()
+    loginWithGoogle();
   };
 
   fetcher = params => {
@@ -85,18 +88,28 @@ class App extends Component {
   render() {
     return (
       <div className="App">
-        {this.state.loggedIn ? (
-          <div style={{ height: "100vh", width: "100vw" }}>
-            <p>{this.state.displayName}</p>
-            <button onClick={() => logout()}>Logout</button>
-            <GraphiQL fetcher={this.fetcher} />
+        <div style={{ padding: 20 }}>
+          {this.state.loggedIn ? (
+            <div>
+              <p>{this.state.displayName}</p>
+              <button onClick={() => logout()}>Logout</button>
+            </div>
+          ) : (
+            <React.Fragment>
+              <button onClick={this.handleLogin}>Login</button>
+              <button onClick={() => {
+                loginAnonymous()
+                .catch(err => {
+                  alert(err)
+                })
+              }}>Anonymous login</button>
+            </React.Fragment>
+          )}
+        </div>
 
-          </div>
-        ) : (
-          <div style={{ padding: 20 }}>
-            <button onClick={this.handleLogin}>Login</button>
-          </div>
-        )}
+        <div style={{ height: "100vh", width: "100vw" }}>
+          <GraphiQL key={this.state.loggedIn} fetcher={this.fetcher} />
+        </div>
       </div>
     );
   }
